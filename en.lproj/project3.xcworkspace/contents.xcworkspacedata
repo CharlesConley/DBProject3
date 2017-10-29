@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Workspace
+   version = "1.0">
+   <FileRef
+      location = "group:../../Contributions.txt">
+   </FileRef>
+   <FileRef
+      location = "group:../../docs">
+   </FileRef>
+   <FileRef
+      location = "group:../../Doxyfile">
+   </FileRef>
+   <FileRef
+      location = "group:../../License.txt">
+   </FileRef>
+   <FileRef
+      location = "group:../../Makefile">
+   </FileRef>
+   <FileRef
+      location = "group:..">
+   </FileRef>
+   <FileRef
+      location = "group:../../project3.xcworkspace">
+   </FileRef>
+   <FileRef
+      location = "group:../../README">
+   </FileRef>
+   <FileRef
+      location = "group:../../README.md">
+   </FileRef>
+   <FileRef
+      location = "group:../../src">
+   </FileRef>
+   <FileRef
+      location = "container:project3/project3.xcodeproj">
+   </FileRef>
+</Workspace>

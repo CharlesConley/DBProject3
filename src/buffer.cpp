@@ -38,12 +38,16 @@ BufMgr::BufMgr(std::uint32_t bufs)
   clockHand = bufs - 1;
 }
 
-
+//flush all the frames and
 BufMgr::~BufMgr() {
 }
 
+    
 void BufMgr::advanceClock()
 {
+    std::cout << clockHand << std::endl;
+    clockHand = (clockHand + 1) % numBufs;
+    std::cout << clockHand << std::endl;
 }
 
 void BufMgr::allocBuf(FrameId & frame) 
@@ -59,6 +63,7 @@ void BufMgr::readPage(File* file, const PageId pageNo, Page*& page)
 void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty) 
 {
 }
+
 
 void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page) 
 {
