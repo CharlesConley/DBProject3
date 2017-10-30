@@ -38,30 +38,67 @@ BufMgr::BufMgr(std::uint32_t bufs)
   clockHand = bufs - 1;
 }
 
-//flush all the frames and
+//flush all the frames and clear all memory
 BufMgr::~BufMgr() {
 }
 
     
 void BufMgr::advanceClock()
 {
-    std::cout << clockHand << std::endl;
     clockHand = (clockHand + 1) % numBufs;
-    std::cout << clockHand << std::endl;
 }
 
+//Implement the clock algorithm
+//add a pinned count, if pinned count = numBufs, then throw exception
+//run through each buf and check for validity following diagram.
 void BufMgr::allocBuf(FrameId & frame) 
 {
+    std::uint32_t pinnedCount = 0;
+    frameFound = false;
+    
+    
+    //Implement clock algorithm
+    advanceClock();
+    
+    //start loop, until frame is found. Only time it will leave loop is if frame is found
+    //or bufferexceededexception occurs
+    while(!frameFound && pinnedCount < numBufs){
+    
+    //found a buffer frame that can be used
+    if(bufDescTable[clockHand].valid == false){
+        
+        frameFound = true;
+        
+    } //check the refbit, if it is false then frame is found and the entry in the hashtable needs to be removed
+    else if(bufDescTable[clockHand].refBit == true){
+        bufDescTable[clockHand].refBit = false;
+    
+        //remove the hashtable entry
+        bufHashTbl->remove(bufDescTable[clockHand].file, bufDescTable[clockHand].pageNo)
+        
+    }
+    
+    }
+    //All pages are pinned
+    if(pinnedCount == numBufs){
+        throw BufferExceededException();
+    }else {
+        frame = clockHand;
+        
+        bufDescTable[clockHand].Clear();
+    }
+    
 }
 
-	
+
 void BufMgr::readPage(File* file, const PageId pageNo, Page*& page)
 {
 }
 
-
+//set the frame that the page is allocated to
 void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty) 
 {
+    
 }
 
 
@@ -69,10 +106,12 @@ void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page)
 {
 }
 
+//
 void BufMgr::flushFile(const File* file) 
 {
 }
 
+//
 void BufMgr::disposePage(File* file, const PageId PageNo)
 {
 }
