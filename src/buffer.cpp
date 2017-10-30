@@ -53,36 +53,45 @@ void BufMgr::advanceClock()
 //run through each buf and check for validity following diagram.
 void BufMgr::allocBuf(FrameId & frame) 
 {
+    //track if a frame has been found
+    bool frameFound = false;
+    
     std::uint32_t pinnedCount = 0;
-    frameFound = false;
-    
-    
-    //Implement clock algorithm
-    advanceClock();
     
     //start loop, until frame is found. Only time it will leave loop is if frame is found
     //or bufferexceededexception occurs
     while(!frameFound && pinnedCount < numBufs){
-    
-    //found a buffer frame that can be used
-    if(bufDescTable[clockHand].valid == false){
         
-        frameFound = true;
+        advanceClock();
         
-    } //check the refbit, if it is false then frame is found and the entry in the hashtable needs to be removed
-    else if(bufDescTable[clockHand].refBit == true){
-        bufDescTable[clockHand].refBit = false;
-    
-        //remove the hashtable entry
-        bufHashTbl->remove(bufDescTable[clockHand].file, bufDescTable[clockHand].pageNo)
+        //found a buffer frame that can be used, exit loop
+        if(!bufDescTable[clockHand].valid){
         
-    }
+            frameFound = true;
+            break;
+        
+        } //check the refbit, if it is false then frame is found and the entry in the hashtable needs to be removed
+        else if(bufDescTable[clockHand].refBit){
+            bufDescTable[clockHand].refBit = false;
+            continue;
+        } else if(bufDescTable[clockHand].pinCnt > 0) {
+            pinnedCount++;
+            continue;
+        }else{
+            
+            if(bufDescTable[clockHand].dirty){
+                bufDescTable[clockHand].file->writePage(bufPool[clockHand);
+            }
+            framefound = true;
+            //remove the hashtable entry
+            hashTable->remove(bufDescTable[clockHand].file, bufDescTable[clockHand].pageNo)
+        }
     
     }
     //All pages are pinned
     if(pinnedCount == numBufs){
         throw BufferExceededException();
-    }else {
+    } else {
         frame = clockHand;
         
         bufDescTable[clockHand].Clear();
