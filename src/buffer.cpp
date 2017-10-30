@@ -71,8 +71,8 @@ void BufMgr::allocBuf(FrameId & frame)
             break;
         
         } //check the refbit, if it is false then frame is found and the entry in the hashtable needs to be removed
-        else if(bufDescTable[clockHand].refBit){
-            bufDescTable[clockHand].refBit = false;
+        else if(bufDescTable[clockHand].refbit){
+            bufDescTable[clockHand].refbit = false;
             continue;
         } else if(bufDescTable[clockHand].pinCnt > 0) {
             pinnedCount++;
@@ -80,11 +80,11 @@ void BufMgr::allocBuf(FrameId & frame)
         }else{
             
             if(bufDescTable[clockHand].dirty){
-                bufDescTable[clockHand].file->writePage(bufPool[clockHand);
+                bufDescTable[clockHand].file->writePage(bufPool[clockHand]);
             }
-            framefound = true;
+            frameFound = true;
             //remove the hashtable entry
-            hashTable->remove(bufDescTable[clockHand].file, bufDescTable[clockHand].pageNo)
+            hashTable->remove(bufDescTable[clockHand].file, bufDescTable[clockHand].pageNo);
         }
     
     }
