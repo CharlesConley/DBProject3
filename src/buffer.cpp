@@ -40,6 +40,13 @@ BufMgr::BufMgr(std::uint32_t bufs)
 
 //flush all the frames and clear all memory
 BufMgr::~BufMgr() {
+    
+    //flush files
+    
+    //Now
+    delete bufPool;
+    delete hashTable;
+    
 }
 
     
@@ -102,30 +109,31 @@ void BufMgr::allocBuf(FrameId & frame)
 
 void BufMgr::readPage(File* file, const PageId pageNo, Page*& page)
 {
-    /*
+    FrameId frameNo;
     // check whether page is already in buffer pool with lookup(), throws HashNotFoundExc.
     try {
-        hashTable->lookup(file, pageNo, file->readPage(pageNo));
+        hashTable->lookup(file, pageNo, frameNo);
 
         // no exception thrown, in hash table
 
         // set appropriate refbit
-        bufDescTable[pageNo];
+        bufDescTable[frameNo].refbit = 1;
 
         // increment pin count
-
+        bufDescTable[frameNo].pinCnt++;
         // return pointer to frame containing the page via page parameter
+        page = &bufPool[frameNo];
     }
     catch (const HashNotFoundException& e) {
         // not in buffer pool
 
         // allocate buffer frame
-        allocBuf(file->readPage(pageNo));
+        allocBuf(frameNo);
 
         // insert page into hash table
-        hashTable->insert(file, pageNo, bufDescTable[pageNo].frameNo);
+        hashTable->insert(file, pageNo, frameNo);
     }
-     */
+    
 
 
 
@@ -161,7 +169,7 @@ void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty)
 
 void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page) 
 {
-	FrameId frameNo = 0;		
+	FrameId frameNo;		
 	//allocate page and get buffer frame pool
 	Page filePage = file->allocatePage();
 	allocBuf(frameNo);
