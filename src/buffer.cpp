@@ -134,25 +134,45 @@ void BufMgr::readPage(File* file, const PageId pageNo, Page*& page)
 //set the frame that the page is allocated to
 void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty) 
 {
+		
+	//check hashtable for page
+	try {
+		hashTable->lookup(file, pageNo, bufDescTable->frameNo);
+		//check if pin cnt is already set to 0. throw appropriate error
+		if (bufDescTable[bufDescTable->frameNo].pinCnt == 0){
+		throw PageNotPinnedException(file->filename(), pageNo, bufDescTable->frameNo);	
+		}
+		//get dirtty
+		
+		bufDescTable[bufDescTable->frameNo].dirty = dirty;
+		
+		//decrement pin count
+		bufDescTable[bufDescTable->frameNo].pinCnt--;	
+		
+	}
+	catch(const HashNotFoundException& e){
+		
+	}
+
+	
     
 }
 
 
 void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page) 
 {
-	FrameId frameNumber = 0;
-	
+		
 	//allocate page and get buffer frame pool
 	Page filePage = file->allocatePage();
-	allocBuf(frameNumber);
+	allocBuf(bufDescTable->frameNo);
 	pageNo = filePage.page_number();
 	
 	//insert into hashtable then set frame
-	hashTable->insert(file, pageNo, frameNumber);
-	bufDescTable[frameNumber].Set(file, pageNo);
-	bufPool[frameNumber] = filePage;
+	hashTable->insert(file, pageNo, bufDescTable->frameNo);
+	bufDescTable[bufDescTable->frameNo].Set(file, pageNo);
+	bufPool[bufDescTable->frameNo] = filePage;
 	//passs correct pointer
-	page = &bufPool[frameNumber];
+	page = &bufPool[bufDescTable->frameNo];
 	
 
 
@@ -161,6 +181,8 @@ void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page)
 //
 void BufMgr::flushFile(const File* file) 
 {
+
+
 }
 
 //
