@@ -60,7 +60,7 @@ void BufMgr::allocBuf(FrameId & frame)
     
     //start loop, until frame is found. Only time it will leave loop is if frame is found
     //or bufferexceededexception occurs
-    while(!frameFound && pinnedCount < numBufs){
+    while(!frameFound && (pinnedCount < numBufs)){
         
         advanceClock();
         
@@ -102,6 +102,33 @@ void BufMgr::allocBuf(FrameId & frame)
 
 void BufMgr::readPage(File* file, const PageId pageNo, Page*& page)
 {
+    /*
+    // check whether page is already in buffer pool with lookup(), throws HashNotFoundExc.
+    try {
+        hashTable->lookup(file, pageNo, file->readPage(pageNo));
+
+        // no exception thrown, in hash table
+
+        // set appropriate refbit
+        bufDescTable[pageNo];
+
+        // increment pin count
+
+        // return pointer to frame containing the page via page parameter
+    }
+    catch (const HashNotFoundException& e) {
+        // not in buffer pool
+
+        // allocate buffer frame
+        allocBuf(file->readPage(pageNo));
+
+        // insert page into hash table
+        hashTable->insert(file, pageNo, bufDescTable[pageNo].frameNo);
+    }
+     */
+
+
+
 }
 
 //set the frame that the page is allocated to
@@ -123,6 +150,18 @@ void BufMgr::flushFile(const File* file)
 //
 void BufMgr::disposePage(File* file, const PageId PageNo)
 {
+
+    // if allocated in buffer pool, free it
+    try {
+        hashTable->lookup(file, PageNo, bufDescTable->frameNo);
+        // remove page from hash table
+        hashTable->remove(file, PageNo);
+    }
+    catch (const HashNotFoundException& e) {
+        // not in hash table, shouldn't need to do anything
+    }
+
+    file->deletePage(PageNo);
 }
 
 void BufMgr::printSelf(void) 
