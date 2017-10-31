@@ -134,20 +134,20 @@ void BufMgr::readPage(File* file, const PageId pageNo, Page*& page)
 //set the frame that the page is allocated to
 void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty) 
 {
-		
+	FrameId frameNo = 0;		
 	//check hashtable for page
 	try {
-		hashTable->lookup(file, pageNo, bufDescTable->frameNo);
+		hashTable->lookup(file, pageNo, frameNo);
 		//check if pin cnt is already set to 0. throw appropriate error
-		if (bufDescTable[bufDescTable->frameNo].pinCnt == 0){
-		throw PageNotPinnedException(file->filename(), pageNo, bufDescTable->frameNo);	
+		if (bufDescTable[frameNo].pinCnt == 0){
+		throw PageNotPinnedException(file->filename(), pageNo, frameNo);	
 		}
 		//get dirtty
 		
-		bufDescTable[bufDescTable->frameNo].dirty = dirty;
+		bufDescTable[frameNo].dirty = dirty;
 		
 		//decrement pin count
-		bufDescTable[bufDescTable->frameNo].pinCnt--;	
+		bufDescTable[frameNo].pinCnt--;	
 		
 	}
 	catch(const HashNotFoundException& e){
@@ -161,18 +161,18 @@ void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty)
 
 void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page) 
 {
-		
+	FrameId frameNo = 0;		
 	//allocate page and get buffer frame pool
 	Page filePage = file->allocatePage();
-	allocBuf(bufDescTable->frameNo);
+	allocBuf(frameNo);
 	pageNo = filePage.page_number();
 	
 	//insert into hashtable then set frame
-	hashTable->insert(file, pageNo, bufDescTable->frameNo);
-	bufDescTable[bufDescTable->frameNo].Set(file, pageNo);
-	bufPool[bufDescTable->frameNo] = filePage;
+	hashTable->insert(file, pageNo, frameNo);
+	bufDescTable[frameNo].Set(file, pageNo);
+	bufPool[frameNo] = filePage;
 	//passs correct pointer
-	page = &bufPool[bufDescTable->frameNo];
+	page = &bufPool[frameNo];
 	
 
 
@@ -188,10 +188,10 @@ void BufMgr::flushFile(const File* file)
 //
 void BufMgr::disposePage(File* file, const PageId PageNo)
 {
-
+	FrameId frameNo = 0;
     // if allocated in buffer pool, free it
     try {
-        hashTable->lookup(file, PageNo, bufDescTable->frameNo);
+        hashTable->lookup(file, PageNo, frameNo);
         // remove page from hash table
         hashTable->remove(file, PageNo);
     }
