@@ -113,6 +113,22 @@ void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty)
 
 void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page) 
 {
+	FrameId frameNumber = 0;
+	
+	//allocate page and get buffer frame pool
+	Page filePage = file->allocatePage();
+	allocBuf(frameNumber);
+	pageNo = filePage.page_number();
+	
+	//insert into hashtable then set frame
+	hashTable->insert(file, pageNo, frameNumber);
+	bufDescTable[frameNumber].Set(file, pageNo);
+	bufPool[frameNumber] = filePage;
+	//passs correct pointer
+	page = &bufPool[frameNumber];
+	
+
+
 }
 
 //
