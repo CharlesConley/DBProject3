@@ -198,6 +198,7 @@ void test2()
 
 	for (i = 0; i < num/3; i++) 
 	{
+        
 		bufMgr->allocPage(file2ptr, pageno2, page2);
 		sprintf((char*)tmpbuf, "test.2 Page %u %7.1f", pageno2, (float)pageno2);
 		rid2 = page2->insertRecord(tmpbuf);
@@ -210,7 +211,7 @@ void test2()
 		{
 			PRINT_ERROR("ERROR :: CONTENTS DID NOT MATCH");
 		}
-
+        
 		bufMgr->allocPage(file3ptr, pageno3, page3);
 		sprintf((char*)tmpbuf, "test.3 Page %u %7.1f", pageno3, (float)pageno3);
 		rid3 = page3->insertRecord(tmpbuf);

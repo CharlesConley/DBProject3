@@ -44,6 +44,7 @@ BufMgr::~BufMgr() {
     //flush files
     
     //Now
+    delete bufDescTable;
     delete bufPool;
     delete hashTable;
     
@@ -81,7 +82,7 @@ void BufMgr::allocBuf(FrameId & frame)
         else if(bufDescTable[clockHand].refbit){
             bufDescTable[clockHand].refbit = false;
             continue;
-        } else if(bufDescTable[clockHand].pinCnt > 0) {
+        }else if(bufDescTable[clockHand].pinCnt > 0) {
             pinnedCount++;
             continue;
         }else{
@@ -125,13 +126,18 @@ void BufMgr::readPage(File* file, const PageId pageNo, Page*& page)
         page = &bufPool[frameNo];
     }
     catch (const HashNotFoundException& e) {
-        // not in buffer pool
+        // not in buffer pool, need to add to buffer
 
         // allocate buffer frame
         allocBuf(frameNo);
-
+        // add to bufPool
+        bufPool[frameNo] = file->readPage(pageNo);
+        // set the description table
+        bufDescTable[frameNo].Set(file, pageNo);
         // insert page into hash table
         hashTable->insert(file, pageNo, frameNo);
+        // return the page pointer
+        page = &bufPool[frameNo];
     }
     
 
@@ -151,9 +157,10 @@ void BufMgr::unPinPage(File* file, const PageId pageNo, const bool dirty)
 		throw PageNotPinnedException(file->filename(), pageNo, frameNo);	
 		}
 		//get dirtty
-		
-		bufDescTable[frameNo].dirty = dirty;
-		
+        if(dirty){
+            bufDescTable[frameNo].dirty = dirty;
+        }
+            
 		//decrement pin count
 		bufDescTable[frameNo].pinCnt--;	
 		
@@ -180,7 +187,7 @@ void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page)
 	bufDescTable[frameNo].Set(file, pageNo);
 	bufPool[frameNo] = filePage;
 	//passs correct pointer
-	page = &bufPool[frameNo];
+    page = &bufPool[frameNo];
 	
 
 
@@ -189,7 +196,7 @@ void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page)
 //
 void BufMgr::flushFile(const File* file) 
 {
-    for(int i = 0; i < numBufs; i++){
+    for(uint32_t i = 0; i < numBufs; i++){
         //check to see if the entry is from this file
         if(file == bufDescTable[i].file){
           
@@ -222,6 +229,8 @@ void BufMgr::disposePage(File* file, const PageId PageNo)
     try {
         hashTable->lookup(file, PageNo, frameNo);
         // remove page from hash table
+        bufDescTable[frameNo].Clear();
+        
         hashTable->remove(file, PageNo);
     }
     catch (const HashNotFoundException& e) {
