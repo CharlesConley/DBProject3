@@ -189,8 +189,29 @@ void BufMgr::allocPage(File* file, PageId &pageNo, Page*& page)
 //
 void BufMgr::flushFile(const File* file) 
 {
-
-
+    for(int i = 0; i < numBufs; i++){
+        //check to see if the entry is from this file
+        if(file == bufDescTable[i].file){
+          
+            //before proceeding, check valid bit and pinned
+            if(!bufDescTable[i].valid){
+                throw PagePinnedException(file->filename(), bufDescTable[i].pageNo, i);
+            }else if(bufDescTable[i].pinCnt > 0) {
+                throw BadBufferException(i, bufDescTable[i].dirty, bufDescTable[i].valid, bufDescTable[i].refbit);
+            }
+            
+            if (bufDescTable[i].dirty){
+                
+                bufDescTable[i].file->writePage(bufPool[i]);
+                bufDescTable[i].dirty = false;
+            }
+            
+            hashTable->remove(file, bufDescTable[i].pageNo);
+            
+            bufDescTable[i].Clear();
+            
+        }
+    }
 }
 
 //
