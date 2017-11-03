@@ -202,10 +202,10 @@ void BufMgr::flushFile(const File* file)
           
             //before proceeding, check valid bit and pinned
             if(!bufDescTable[i].valid){
-                throw PagePinnedException(file->filename(), bufDescTable[i].pageNo, i);
+        	  throw BadBufferException(i, bufDescTable[i].dirty, bufDescTable[i].valid, bufDescTable[i].refbit);
             }else if(bufDescTable[i].pinCnt > 0) {
-                throw BadBufferException(i, bufDescTable[i].dirty, bufDescTable[i].valid, bufDescTable[i].refbit);
-            }
+           	  throw PagePinnedException(file->filename(), bufDescTable[i].pageNo, i);
+		 }
             
             if (bufDescTable[i].dirty){
                 

@@ -302,11 +302,14 @@ void test6()
 	//flushing file with pages still pinned. Should generate an error
 	for (i = 1; i <= num; i++) {
 		bufMgr->readPage(file1ptr, i, page);
+	
 	}
 
 	try
 	{
+		
 		bufMgr->flushFile(file1ptr);
+		
 		PRINT_ERROR("ERROR :: Pages pinned for file being flushed. Exception should have been thrown before execution reaches this point.");
 	}
 	catch(PagePinnedException e)
@@ -317,6 +320,6 @@ void test6()
 
 	for (i = 1; i <= num; i++) 
 		bufMgr->unPinPage(file1ptr, i, true);
-
+		
 	bufMgr->flushFile(file1ptr);
 }
