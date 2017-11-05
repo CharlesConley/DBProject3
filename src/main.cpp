@@ -12,6 +12,8 @@
 #include "exceptions/page_not_pinned_exception.h"
 #include "exceptions/page_pinned_exception.h"
 #include "exceptions/buffer_exceeded_exception.h"
+#include "exceptions/bad_buffer_exception.h"
+#include "exceptions/hash_not_found_exception.h"
 
 #define PRINT_ERROR(str) \
 { \
@@ -28,7 +30,7 @@ RecordId rid[num], rid2, rid3;
 Page *page, *page2, *page3;
 char tmpbuf[100];
 BufMgr* bufMgr;
-File *file1ptr, *file2ptr, *file3ptr, *file4ptr, *file5ptr;
+File *file1ptr, *file2ptr, *file3ptr, *file4ptr, *file5ptr, *file7ptr;
 
 void test1();
 void test2();
@@ -36,6 +38,8 @@ void test3();
 void test4();
 void test5();
 void test6();
+void test7();
+void test8();
 void testBufMgr();
 
 int main() 
@@ -112,6 +116,7 @@ void testBufMgr()
   const std::string& filename3 = "test.3";
   const std::string& filename4 = "test.4";
   const std::string& filename5 = "test.5";
+  const std::string& filename7 = "test.7";
 
   try
 	{
@@ -120,6 +125,7 @@ void testBufMgr()
     File::remove(filename3);
     File::remove(filename4);
     File::remove(filename5);
+	File::remove(filename7);
   }
 	catch(FileNotFoundException e)
 	{
@@ -130,12 +136,14 @@ void testBufMgr()
 	File file3 = File::create(filename3);
 	File file4 = File::create(filename4);
 	File file5 = File::create(filename5);
+	File file7 = File::create(filename7);
 
 	file1ptr = &file1;
 	file2ptr = &file2;
 	file3ptr = &file3;
 	file4ptr = &file4;
 	file5ptr = &file5;
+	file7ptr = &file7;
 
 	//Test buffer manager
 	//Comment tests which you do not wish to run now. Tests are dependent on their preceding tests. So, they have to be run in the following order. 
@@ -146,6 +154,8 @@ void testBufMgr()
 	test4();
 	test5();
 	test6();
+	test7();
+	test8();
 
 	//Close files before deleting them
 	file1.~File();
@@ -153,6 +163,7 @@ void testBufMgr()
 	file3.~File();
 	file4.~File();
 	file5.~File();
+	file7.~File();
 
 	//Delete files
 	File::remove(filename1);
@@ -160,6 +171,7 @@ void testBufMgr()
 	File::remove(filename3);
 	File::remove(filename4);
 	File::remove(filename5);
+	File::remove(filename7);
 
 	delete bufMgr;
 
@@ -322,4 +334,33 @@ void test6()
 		bufMgr->unPinPage(file1ptr, i, true);
 		
 	bufMgr->flushFile(file1ptr);
+}
+
+void test7()
+{
+	// test basic disposePage funcitonality
+	bufMgr->allocPage(file7ptr, pageno1, page);
+	try {
+		bufMgr->disposePage(file7ptr, pageno1);
+	}
+	catch(HashNotFoundException e)
+	{
+	}
+
+	std::cout << "Test 7 passed" << "\n";
+}
+
+
+void test8()
+{
+	// test disposing invalid page, should throw error
+	bufMgr->allocPage(file7ptr, pageno1, page);
+	try {
+		bufMgr->disposePage(file7ptr, pageno2);
+	}
+	catch(InvalidPageException e)
+	{
+	}
+
+	std::cout << "Test 8 passed" << "\n";
 }
