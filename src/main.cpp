@@ -40,6 +40,7 @@ void test5();
 void test6();
 void test7();
 void test8();
+void test9();
 void testBufMgr();
 
 int main() 
@@ -156,7 +157,10 @@ void testBufMgr()
 	test6();
 	test7();
 	test8();
+    test9();
 
+    delete bufMgr;
+    
 	//Close files before deleting them
 	file1.~File();
 	file2.~File();
@@ -173,7 +177,7 @@ void testBufMgr()
 	File::remove(filename5);
 	File::remove(filename7);
 
-	delete bufMgr;
+	
 
 	std::cout << "\n" << "Passed all tests." << "\n";
 }
@@ -312,7 +316,7 @@ void test5()
 void test6()
 {
 	//flushing file with pages still pinned. Should generate an error
-	for (i = 1; i <= num; i++) {
+	for (i = 1; i <= num/2; i++) {
 		bufMgr->readPage(file1ptr, i, page);
 	
 	}
@@ -330,7 +334,7 @@ void test6()
 
 	std::cout << "Test 6 passed" << "\n";
 
-	for (i = 1; i <= num; i++) 
+	for (i = 1; i <= num/2; i++)
 		bufMgr->unPinPage(file1ptr, i, true);
 		
 	bufMgr->flushFile(file1ptr);
@@ -364,3 +368,40 @@ void test8()
 
 	std::cout << "Test 8 passed" << "\n";
 }
+
+/**
+ *  Test9 will be the same as test 6, however only some of the pages are pinned. Should still throw exception
+ */
+void test9()
+{
+    //flushing file with pages still pinned. Should generate an error
+    for (i = num/2 + 1; i <= num; i++) {
+        bufMgr->readPage(file1ptr, i, page);
+        if (i < (.75 * num))
+        {
+            bufMgr->unPinPage(file1ptr, i, page);
+        }
+    }
+    
+    try
+    {
+        
+        bufMgr->flushFile(file1ptr);
+        
+        PRINT_ERROR("ERROR :: Pages pinned for file being flushed. Exception should have been thrown before execution reaches this point.");
+    }
+    catch(PagePinnedException e)
+    {
+    }
+    
+    for (i = num/2 + 1; i <= num; i++){
+        if(i >= (.75 * num))
+        bufMgr->unPinPage(file1ptr, i, true);
+    }
+    
+    bufMgr->flushFile(file1ptr);
+    
+    std::cout << "Test 9 passed" << "\n";
+}
+
+
