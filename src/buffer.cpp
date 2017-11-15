@@ -49,7 +49,7 @@ BufMgr::BufMgr(std::uint32_t bufs)
 BufMgr::~BufMgr() {
     
     ///flush files
-    for(int j = 0; j > numBufs; j++){
+    for(uint32_t j = 0; j > numBufs; j++){
         if(bufDescTable[j].dirty){
             flushFile(bufDescTable[j].file);
         }
